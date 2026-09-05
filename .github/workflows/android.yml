@@ -37,7 +37,15 @@ jobs:
 
       - name: Run Expo Prebuild & Build APK
         run: |
+          # मेट्रो बंडलरसाठी योग्य कन्फिगरेशन तयार करणे
+          echo "const { getDefaultConfig } = require('expo/metro-config');" > metro.config.js
+          echo "const config = getDefaultConfig(__dirname);" >> metro.config.js
+          echo "module.exports = config;" >> metro.config.js
+
+          # ऍप्सचे पॅकेज आणि नेटिव्ह फोल्डर प्रीबिल्ड करणे
           npx expo prebuild --platform android --clean
+
+          # Gradle द्वारे APK बिल्ड करणे
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
