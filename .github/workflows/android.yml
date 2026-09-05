@@ -33,11 +33,9 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        working-directory: artifacts/rupali
         run: pnpm install --no-frozen-lockfile --shamefully-hoist
 
       - name: Run Expo Prebuild & Build APK
-        working-directory: artifacts/rupali
         run: |
           npx expo prebuild --platform android --clean
           cd android && ./gradlew assembleRelease
@@ -46,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: artifacts/rupali/android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
