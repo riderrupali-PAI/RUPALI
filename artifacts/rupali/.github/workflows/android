@@ -1,0 +1,67 @@
+name: Build RUPALI Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "artifacts/rupali/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: artifacts/rupali
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install workspace dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Install PyTorch CPU
+        run: |
+          python -m pip install \
+            --disable-pip-version-check \
+            torch==2.6.0 \
+            --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Download ONNX model and voicepacks
+        run: pnpm run fetch-models
+
+      - name: Generate Android native project
+        run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Make Gradle executable
+        working-directory: artifacts/rupali/android
+        run: chmod +x ./gradlew
+
+      - name: Build release APK
+        working-directory: artifacts/rupali/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: rupali-marathi-offline-tts
+          path: artifacts/rupali/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
