@@ -1,57 +1,52 @@
-> Task :expo-modules-core:writeReleaseAarMetadata
-> Task :vishu-offline-tts:writeReleaseAarMetadata
+name: Build RUPALI Android APK
 
-> Task :app:createBundleReleaseJsAndAssets
-Starting Metro Bundler
-Error: Unable to resolve module ../../App from /home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/node_modules/expo/AppEntry.js: 
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "artifacts/rupali/**"
 
-None of these files exist:
-  * node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/App(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
-  * node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/App
-  1 | import registerRootComponent from 'expo/src/launch/registerRootComponent';
-  2 |
-> 3 | import App from '../../App';
-    |                  ^
-  4 |
-  5 | registerRootComponent(App);
-  6 |
-Error: Unable to resolve module ../../App from /home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/node_modules/expo/AppEntry.js: 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: artifacts/rupali
 
-None of these files exist:
-  * node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/App(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
-  * node_modules/.pnpm/expo@52.0.49_@babel+core@7.29.7_supports-color@8.1.1__@babel+preset-env@7.29.7_@babel+c_6c3d4a7eb0f1b947277b5e2bc3af835d/App
-  1 | import registerRootComponent from 'expo/src/launch/registerRootComponent';
-  2 |
-> 3 | import App from '../../App';
-    |                  ^
-  4 |
-  5 | registerRootComponent(App);
-  6 |
-    at ModuleResolver.resolveDependency (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:114:15)
-    at DependencyGraph.resolveDependency (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/node-haste/DependencyGraph.js:248:43)
-    at /home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/lib/transformHelpers.js:165:21
-    at resolveDependencies (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/DeltaBundler/buildSubgraph.js:42:25)
-    at visit (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/DeltaBundler/buildSubgraph.js:83:30)
-    at processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async Promise.all (index 0)
-    at buildSubgraph (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/DeltaBundler/buildSubgraph.js:103:3)
-    at Graph._buildDelta (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/DeltaBundler/Graph.js:157:22)
-    at Graph.initialTraverseDependencies (/home/runner/work/RUPALI/RUPALI/node_modules/.pnpm/metro@0.81.5_supports-color@8.1.1/node_modules/metro/src/DeltaBundler/Graph.js:140:19)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-> Task :app:createBundleReleaseJsAndAssets FAILED
-27 actionable tasks: 27 executed
-FAILURE: Build failed with an exception.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-* What went wrong:
-Execution failed for task ':app:createBundleReleaseJsAndAssets'.
-> Process 'command 'node'' finished with non-zero exit value 1
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
+      - name: Install workspace dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
 
-BUILD FAILED in 2m 13s
-Error: Process completed with exit code 
+      - name: Install project dependencies
+        run: pnpm install --no-frozen-lockfile --shamefully-hoist
+
+      - name: Run Expo Prebuild & Build APK
+        run: |
+          npx expo prebuild --platform android --clean
+          cd android && ./gradlew assembleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: artifacts/rupali/android/app/build/outputs/apk/release/*.apk
