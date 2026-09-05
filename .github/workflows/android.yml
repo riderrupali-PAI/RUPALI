@@ -32,11 +32,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install workspace dependencies
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build release APK
+      - name: Build Android APK
         run: |
-          # React Native / Expo बिल्ड कमांड
-          echo "Building APK..."
-          # npx expo run:android --variant release किंवा योग्य बिल्ड कमांड येथे टाका
+          # जर तुम्ही Expo वापरत असाल तर लोकल बिल्डसाठी किंवा Gradle साठी:
+          cd android && ./gradlew assembleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
