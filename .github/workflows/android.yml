@@ -33,16 +33,21 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install workspace dependencies
-        working-directory: .
-        run: pnpm install --frozen-lockfile
-
-      - name: Install project dependencies
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --shamefully-hoist
 
-      - name: Run Expo Prebuild & Build APK
+      - name: Fix Metro Config & Prebuild
         run: |
+          # मेट्रो बंडलरसाठी योग्य प्रोजेक्ट रूट फिक्स करणे
+          echo "const { getDefaultConfig } = require('expo/metro-config');" > metro.config.js
+          echo "const config = getDefaultConfig(__dirname);" >> metro.config.js
+          echo "config.projectRoot = __dirname;" >> metro.config.js
+          echo "module.exports = config;" >> metro.config.js
+
           npx expo prebuild --platform android --clean
+
+      - name: Build APK via Gradle
+        run: |
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
