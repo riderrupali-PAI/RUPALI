@@ -35,17 +35,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --shamefully-hoist
 
-      - name: Run Expo Prebuild & Build APK
+      - name: Fix Metro Config & Prebuild
         run: |
-          # मेट्रो बंडलरसाठी योग्य कन्फिगरेशन तयार करणे
+          # मेट्रो बंडलरसाठी अचूक प्रोजेक्ट रूट सेट करणे
           echo "const { getDefaultConfig } = require('expo/metro-config');" > metro.config.js
           echo "const config = getDefaultConfig(__dirname);" >> metro.config.js
           echo "module.exports = config;" >> metro.config.js
 
-          # ऍप्सचे पॅकेज आणि नेटिव्ह फोल्डर प्रीबिल्ड करणे
+          # एक्सपो प्रीबिल्ड चालवणे
           npx expo prebuild --platform android --clean
 
-          # Gradle द्वारे APK बिल्ड करणे
+      - name: Build APK via Gradle
+        run: |
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
