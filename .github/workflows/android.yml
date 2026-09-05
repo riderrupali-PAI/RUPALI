@@ -37,12 +37,13 @@ jobs:
 
       - name: Fix Metro Config & Prebuild
         run: |
-          # मेट्रो बंडलरसाठी अचूक प्रोजेक्ट रूट सेट करणे
+          # मेट्रो बंडलरसाठी प्रोजेक्टचा रूट पाथ आणि कन्फिग सेट करणे
           echo "const { getDefaultConfig } = require('expo/metro-config');" > metro.config.js
           echo "const config = getDefaultConfig(__dirname);" >> metro.config.js
+          echo "config.projectRoot = __dirname;" >> metro.config.js
           echo "module.exports = config;" >> metro.config.js
 
-          # एक्सपो प्रीबिल्ड चालवणे
+          # एक्सपो प्रीबिल्ड क्लीन करून चालवणे
           npx expo prebuild --platform android --clean
 
       - name: Build APK via Gradle
