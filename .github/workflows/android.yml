@@ -35,9 +35,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Android APK
+      - name: Run Expo Prebuild & Build APK
         run: |
-          # जर तुम्ही Expo वापरत असाल तर लोकल बिल्डसाठी किंवा Gradle साठी:
+          # Expo प्रोजेक्टसाठी android फोल्डर तयार करणे
+          npx expo prebuild --platform android
+          
+          # Gradle द्वारे APK बिल्ड करणे
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
