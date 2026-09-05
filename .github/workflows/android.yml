@@ -33,14 +33,11 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile --shamefully-hoist
 
       - name: Run Expo Prebuild & Build APK
         run: |
-          # Expo प्रोजेक्टसाठी android फोल्डर तयार करणे
-          npx expo prebuild --platform android
-          
-          # Gradle द्वारे APK बिल्ड करणे
+          npx expo prebuild --platform android --clean
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
