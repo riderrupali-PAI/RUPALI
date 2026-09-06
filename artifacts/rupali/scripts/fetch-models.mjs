@@ -117,18 +117,3 @@ for (const voice of voices) {
 console.log(
   `Downloaded model and ${voices.length} voicepacks to ${ttsDir}`
 );
-
-const pluginsDir = join(root, "plugins");
-const pluginPath = join(pluginsDir, "withTtsAssets.js");
-
-await mkdir(pluginsDir, { recursive: true });
-await writeFile(pluginPath, "const fs = require(\"fs\");\nconst path = require(\"path\");\nconst { withDangerousMod } = require(\"@expo/config-plugins\");\n\nmodule.exports = function withTtsAssets(config) {\n  return withDangerousMod(config, [\"android\", async (config) => {\n    const source = path.join(config.modRequest.projectRoot, \"assets\", \"tts\");\n    const destination = path.join(\n      config.modRequest.platformProjectRoot,\n      \"app\", \"src\", \"main\", \"assets\", \"assets\", \"tts\",\n    );\n\n    const requiredFiles = [\n      \"model.onnx\",\n      \"config.json\",\n      \"voices/mf_asha.bin\",\n      \"voices/mf_mukta.bin\",\n      \"voices/af_heart.bin\",\n      \"voices/af_nova.bin\",\n      \"voices/mm_vivek.bin\",\n    ];\n\n    for (const relativePath of requiredFiles) {\n      const filePath = path.join(source, relativePath);\n      if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {\n        throw new Error(\"Missing or empty TTS asset: \" + relativePath);\n      }\n    }\n\n    fs.rmSync(destination, { recursive: true, force: true });\n    fs.mkdirSync(destination, { recursive: true });\n    fs.cpSync(source, destination, { recursive: true });\n    console.log(\"Embedded TTS assets in \" + destination);\n    return config;\n  }]);\n};\n");
-
-const appJsonPath = join(root, "app.json");
-const appConfig = JSON.parse(await readFile(appJsonPath, "utf8"));
-const plugins = appConfig.expo.plugins ?? [];
-if (!plugins.includes("./plugins/withTtsAssets")) {
-  plugins.push("./plugins/withTtsAssets");
-  appConfig.expo.plugins = plugins;
-  await writeFile(appJsonPath, JSON.stringify(appConfig, null, 2) + "\n");
-}
