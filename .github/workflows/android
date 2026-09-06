@@ -1,0 +1,141 @@
+name: Build RUPALI Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "**"
+
+jobs:
+  build:
+    name: Build Android Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
+      - name: Locate RUPALI app folder
+        shell: bash
+        run: |
+          if [ -f "artifacts/rupali/package.json" ]; then
+            echo "RUPALI_DIR=artifacts/rupali" >> "$GITHUB_ENV"
+          elif [ -f "package.json" ]; then
+            echo "RUPALI_DIR=." >> "$GITHUB_ENV"
+          else
+            echo "Could not find RUPALI package.json." >&2
+            find . -maxdepth 4 -name package.json -print
+            exit 1
+          fi
+
+      - name: Show selected app folder
+        shell: bash
+        run: |
+          echo "RUPALI_DIR=$RUPALI_DIR"
+          ls -la "$RUPALI_DIR"
+
+      - name: Install RUPALI dependencies
+        shell: bash
+        run: |
+          cd "$RUPALI_DIR"
+          pnpm install --no-frozen-lockfile
+
+      - name: Verify Expo entry
+        shell: bash
+        run: |
+          cd "$RUPALI_DIR"
+
+          node -e "const p=require('./package.json'); console.log('RUPALI main:', p.main)"
+
+          node -e "console.log('Expo:', require('./node_modules/expo/package.json').version)"
+
+          node -e "console.log('Expo Router:', require('./node_modules/expo-router/package.json').version)"
+
+          test -f index.js
+          echo "Expo entry file found: index.js"
+
+      - name: Run TypeScript check
+        shell: bash
+        run: |
+          cd "$RUPALI_DIR"
+          pnpm run typecheck
+
+      - name: Install Python model conversion dependency
+        run: |
+          python -m pip install \
+            --disable-pip-version-check \
+            torch==2.6.0 \
+            --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Download Marathi ONNX model
+        shell: bash
+        run: |
+          cd "$RUPALI_DIR"
+          pnpm run fetch-models
+
+      - name: Generate clean Android project
+        shell: bash
+        run: |
+          cd "$RUPALI_DIR"
+
+          pnpm exec expo prebuild \
+            --platform android \
+            --clean \
+            --no-install
+
+      - name: Build release APK
+        shell: bash
+        run: |
+          chmod +x "$RUPALI_DIR/android/gradlew"
+
+          cd "$RUPALI_DIR/android"
+
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Check generated APK
+        shell: bash
+        run: |
+          APK_PATH="$RUPALI_DIR/android/app/build/outputs/apk/release/app-release.apk"
+
+          if [ ! -f "$APK_PATH" ]; then
+            echo "APK was not generated."
+            find "$RUPALI_DIR/android" -type f -name "*.apk" -print
+            exit 1
+          fi
+
+          ls -lh "$APK_PATH"
+
+      - name: Upload APK to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: rupali-marathi-offline-tts
+          path: "**/android/app/build/outputs/apk/release/app-release.apk"
+          if-no-files-found: error
