@@ -18,10 +18,12 @@ const voices = [
   "mm_vivek"
 ];
 
-await mkdir(voicesDir, { recursive: true });
+await mkdir(voicesDir, {
+  recursive: true
+});
 
 async function download(url, destination) {
-  console.log(`Downloading ${url}`);
+  console.log(`Downloading: ${url}`);
 
   const response = await fetch(url);
 
@@ -31,10 +33,13 @@ async function download(url, destination) {
     );
   }
 
-  const data = Buffer.from(await response.arrayBuffer());
+  const data = Buffer.from(
+    await response.arrayBuffer()
+  );
+
   await writeFile(destination, data);
 
-  console.log(`Saved ${destination}`);
+  console.log(`Saved: ${destination}`);
 }
 
 await download(
@@ -53,8 +58,15 @@ await download(
 );
 
 for (const voice of voices) {
-  const ptPath = join(voicesDir, `${voice}.pt`);
-  const binPath = join(voicesDir, `${voice}.bin`);
+  const ptPath = join(
+    voicesDir,
+    `${voice}.pt`
+  );
+
+  const binPath = join(
+    voicesDir,
+    `${voice}.bin`
+  );
 
   await download(
     `${modelBase}/voices/${voice}.pt?download=true`,
@@ -81,18 +93,25 @@ for (const voice of voices) {
     binPath
   ];
 
-  console.log(`Converting ${voice}.pt to ${voice}.bin`);
+  console.log(
+    `Converting ${voice}.pt to ${voice}.bin`
+  );
 
-  execFileSync("python", pythonArguments, {
-    stdio: "inherit"
-  });
+  execFileSync(
+    "python",
+    pythonArguments,
+    {
+      stdio: "inherit"
+    }
+  );
 
   await readFile(binPath);
 
-  // The .pt file is not needed by the Android app after conversion.
+  // Androidमध्ये .bin file वापरली जाते.
+  // .pt fileची गरज नसल्यामुळे ती रिकामी केली जाते.
   await writeFile(ptPath, "");
 
-  console.log(`Converted ${voice}`);
+  console.log(`Converted: ${voice}`);
 }
 
 console.log(
