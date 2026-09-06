@@ -66,9 +66,12 @@ jobs:
         shell: bash
         run: |
           cd "$RUPALI_DIR"
-          pnpm install --no-frozen-lockfile
 
-      - name: Verify Expo entry
+          pnpm install \
+            --no-frozen-lockfile \
+            --prod=false
+
+      - name: Verify Expo dependencies
         shell: bash
         run: |
           cd "$RUPALI_DIR"
@@ -78,6 +81,8 @@ jobs:
           node -e "console.log('Expo:', require('./node_modules/expo/package.json').version)"
 
           node -e "console.log('Expo Router:', require('./node_modules/expo-router/package.json').version)"
+
+          node -e "console.log('Expo Modules Core:', require('./node_modules/expo-modules-core/package.json').version)"
 
           test -f index.js
           echo "Expo entry file found: index.js"
@@ -127,7 +132,12 @@ jobs:
 
           if [ ! -f "$APK_PATH" ]; then
             echo "APK was not generated."
-            find "$RUPALI_DIR/android" -type f -name "*.apk" -print
+
+            find "$RUPALI_DIR/android" \
+              -type f \
+              -name "*.apk" \
+              -print
+
             exit 1
           fi
 
