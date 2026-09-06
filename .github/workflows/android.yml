@@ -71,12 +71,12 @@ jobs:
             --no-frozen-lockfile \
             --prod=false
 
-      - name: Verify Expo dependencies
+      - name: Verify Expo versions
         shell: bash
         run: |
           cd "$RUPALI_DIR"
 
-          node -e "const p=require('./package.json'); console.log('RUPALI main:', p.main)"
+          node -e "const p=require('./package.json'); console.log('Main:', p.main)"
 
           node -e "console.log('Expo:', require('./node_modules/expo/package.json').version)"
 
@@ -85,7 +85,8 @@ jobs:
           node -e "console.log('Expo Modules Core:', require('./node_modules/expo-modules-core/package.json').version)"
 
           test -f index.js
-          echo "Expo entry file found: index.js"
+
+          echo "Expo entry file found."
 
       - name: Run TypeScript check
         shell: bash
