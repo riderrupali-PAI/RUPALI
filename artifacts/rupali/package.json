@@ -54,9 +54,8 @@
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-    "expo": "~57.0.19",
-    "expo-modules-core": "~3.0.15",
-    "react": "19.2.3",
-    "react-native": "0.86.3"
+  "expo": "~57.0.19",
+  "expo-modules-core": "~57.0.15",
+  "react": "19.2.3",
+  "react-native": "0.86.3"
   }
-}
