@@ -33,17 +33,19 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install dependencies with hoisting
+      - name: Configure pnpm store & hoist settings
+        run: |
+          echo "shamefully-hoist=true" >> .npmrc
+          echo "public-hoist-pattern[]=*@expo/config-plugins*" >> .npmrc
+
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --shamefully-hoist
 
       - name: Run Expo Prebuild & Build APK
         env:
           NODE_ENV: production
         run: |
-          # एक्सपो प्रीबिल्ड चालवणे आणि NODE_ENV पास करणे
           npx expo prebuild --platform android --clean
-          
-          # ग्रॅडेलद्वारे रिलीज APK बिल्ड करणे
           cd android && ./gradlew assembleRelease
 
       - name: Upload APK Artifact
