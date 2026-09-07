@@ -64,7 +64,10 @@ class VishuOfflineTtsModule : Module() {
           play(audio)
           promise.resolve(null)
         } catch (error: Throwable) {
-          promise.reject(error)
+          promise.reject(
+            "E_TTS_SYNTHESIS",
+            error.message ?: "Native Marathi TTS synthesis failed",
+          )
         } finally {
           running = false
         }
