@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { withDangerousMod } = require("@expo/config-plugins");
+const { withDangerousMod, withAppBuildGradle } = require("@expo/config-plugins");
 
 const REQUIRED_FILES = [
   "model.onnx",
@@ -12,7 +12,22 @@ const REQUIRED_FILES = [
   "voices/mm_vivek.bin",
 ];
 
+function withUncompressedTtsAssets(config) {
+  return withAppBuildGradle(config, (nextConfig) => {
+    const contents = nextConfig.modResults.contents;
+    if (!contents.includes("noCompress 'onnx'")) {
+      nextConfig.modResults.contents = contents.replace(
+        "android {",
+        "android {\n    androidResources {\n        noCompress 'onnx', 'bin'\n    }",
+      );
+    }
+    return nextConfig;
+  });
+}
+
 module.exports = function withTtsAssets(config) {
+  config = withUncompressedTtsAssets(config);
+
   return withDangerousMod(config, ["android", async (nextConfig) => {
     const source = path.join(
       nextConfig.modRequest.projectRoot,
