@@ -175,8 +175,9 @@ export default function HomeScreen() {
 
     try {
       await speakMarathi(text.trim(), voiceId, speed);
-    } catch {
-      setError('आवाज तयार करता आला नाही. model files तपासा.');
+    } catch (cause) {
+      const detail = cause instanceof Error ? cause.message : String(cause);
+      setError('आवाज तयार करता आला नाही: ' + detail);
     } finally {
       setIsSpeaking(false);
     }
