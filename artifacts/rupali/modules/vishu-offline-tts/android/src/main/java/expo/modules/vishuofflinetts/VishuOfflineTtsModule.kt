@@ -5,6 +5,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.Promise
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
@@ -39,10 +40,12 @@ class VishuOfflineTtsModule : Module() {
         text: String,
         voiceId: String,
         speed: Double,
+        promise: Promise,
       ->
-      if (!hasModelAssets()) {
+      val missingAssets = missingAssetPaths()
+      if (missingAssets.isNotEmpty()) {
         throw IllegalStateException(
-          "ONNX model assets are missing."
+          "Missing TTS assets: " + missingAssets.joinToString(", ")
         )
       }
 
@@ -59,8 +62,9 @@ class VishuOfflineTtsModule : Module() {
           )
 
           play(audio)
-        } catch (_: Exception) {
-          running = false
+          promise.resolve(null)
+        } catch (error: Throwable) {
+          promise.reject(error)
         } finally {
           running = false
         }
@@ -79,9 +83,22 @@ class VishuOfflineTtsModule : Module() {
     }
   }
 
+  private val requiredAssetPaths = listOf(
+    "assets/tts/model.onnx",
+    "assets/tts/config.json",
+    "assets/tts/voices/mf_asha.bin",
+    "assets/tts/voices/mf_mukta.bin",
+    "assets/tts/voices/af_heart.bin",
+    "assets/tts/voices/af_nova.bin",
+    "assets/tts/voices/mm_vivek.bin",
+  )
+
+  private fun missingAssetPaths(): List<String> {
+    return requiredAssetPaths.filterNot { assetExists(it) }
+  }
+
   private fun hasModelAssets(): Boolean {
-    return assetExists("assets/tts/model.onnx") &&
-      assetExists("assets/tts/config.json")
+    return missingAssetPaths().isEmpty()
   }
 
   private fun synthesize(
