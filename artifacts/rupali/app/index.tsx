@@ -277,6 +277,8 @@ export default function HomeScreen() {
           <View style={styles.readyPill}>
             <Text style={styles.readyText}>READY</Text>
           </View>
+        </View>
+
         <View style={styles.customCard}>
           <View style={styles.customHeader}>
             <View style={styles.customIcon}>
