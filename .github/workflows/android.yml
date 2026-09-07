@@ -33,7 +33,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Configure pnpm store & hoist settings
+      - name: Configure pnpm hoisting for Expo Plugins
         run: |
           echo "shamefully-hoist=true" >> .npmrc
           echo "public-hoist-pattern[]=*@expo/config-plugins*" >> .npmrc
