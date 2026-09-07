@@ -81,6 +81,8 @@ const SAMPLE_PHRASES = [
 
 const STORAGE_KEY = 'rupali-preferences-v1';
 const DEFAULT_TEXT = 'नमस्कार, मी रुपाली आहे. चला, मराठीमध्ये बोलूया.';
+const DEFAULT_AGENT_NAME = 'RUPALI';
+const DEFAULT_GREETING = 'नमस्कार, मी रुपाली आहे.';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -91,6 +93,8 @@ export default function HomeScreen() {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isRestoring, setIsRestoring] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [agentName, setAgentName] = useState<string>(DEFAULT_AGENT_NAME);
+  const [greeting, setGreeting] = useState<string>(DEFAULT_GREETING);
 
   const selectedVoice = useMemo(
     () => VOICES.find((voice) => voice.id === voiceId) ?? VOICES[0],
@@ -108,6 +112,8 @@ export default function HomeScreen() {
           text?: string;
           voiceId?: VoiceId;
           speed?: number;
+          agentName?: string;
+          greeting?: string;
         };
 
         if (preferences.text) {
@@ -127,6 +133,14 @@ export default function HomeScreen() {
         ) {
           setSpeed(preferences.speed);
         }
+
+        if (preferences.agentName?.trim()) {
+          setAgentName(preferences.agentName.trim().slice(0, 24));
+        }
+
+        if (preferences.greeting?.trim()) {
+          setGreeting(preferences.greeting.trim().slice(0, 120));
+        }
       })
       .catch(() => undefined)
       .finally(() => {
@@ -142,6 +156,8 @@ export default function HomeScreen() {
     nextText: string,
     nextVoice: VoiceId,
     nextSpeed: number,
+    nextAgentName = agentName,
+    nextGreeting = greeting,
   ) => {
     await AsyncStorage.setItem(
       STORAGE_KEY,
@@ -149,6 +165,8 @@ export default function HomeScreen() {
         text: nextText,
         voiceId: nextVoice,
         speed: nextSpeed,
+        agentName: nextAgentName,
+        greeting: nextGreeting,
       }),
     );
   };
@@ -220,7 +238,9 @@ export default function HomeScreen() {
               />
             </View>
 
-            <Text style={styles.brand}>RUPALI</Text>
+            <Text style={styles.brand}>
+              {(agentName.trim() || DEFAULT_AGENT_NAME).slice(0, 18)}
+            </Text>
 
             <View style={styles.offlineBadge}>
               <View style={styles.liveDot} />
@@ -257,6 +277,87 @@ export default function HomeScreen() {
           <View style={styles.readyPill}>
             <Text style={styles.readyText}>READY</Text>
           </View>
+        <View style={styles.customCard}>
+          <View style={styles.customHeader}>
+            <View style={styles.customIcon}>
+              <Feather
+                name="edit-3"
+                size={17}
+                color={colors.light.warm}
+              />
+            </View>
+
+            <View style={styles.customCopy}>
+              <Text style={styles.customTitle}>
+                RUPALI customize करा
+              </Text>
+
+              <Text style={styles.customSub}>
+                नाव आणि स्वागत वाक्य तुमच्या पद्धतीने.
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.customLabel}>Agent चे नाव</Text>
+
+          <TextInput
+            value={agentName}
+            onChangeText={(value) => setAgentName(value.slice(0, 24))}
+            onBlur={() =>
+              persistPreferences(
+                text,
+                voiceId,
+                speed,
+                agentName.trim() || DEFAULT_AGENT_NAME,
+                greeting.trim() || DEFAULT_GREETING,
+              )
+            }
+            maxLength={24}
+            placeholder="उदा. माझी रुपाली"
+            placeholderTextColor={colors.light.mutedForeground}
+            style={styles.customInput}
+          />
+
+          <Text style={styles.customLabel}>स्वागत वाक्य</Text>
+
+          <TextInput
+            value={greeting}
+            onChangeText={(value) => setGreeting(value.slice(0, 120))}
+            onBlur={() =>
+              persistPreferences(
+                text,
+                voiceId,
+                speed,
+                agentName.trim() || DEFAULT_AGENT_NAME,
+                greeting.trim() || DEFAULT_GREETING,
+              )
+            }
+            maxLength={120}
+            placeholder="नमस्कार, मी रुपाली आहे."
+            placeholderTextColor={colors.light.mutedForeground}
+            style={styles.customInput}
+          />
+
+          <Pressable
+            onPress={() => {
+              setText(greeting.trim() || DEFAULT_GREETING);
+              setError('');
+            }}
+            style={({ pressed }) => [
+              styles.customAction,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Feather
+              name="corner-down-left"
+              size={14}
+              color={colors.light.sage}
+            />
+
+            <Text style={styles.customActionText}>
+              हे स्वागत वाक्य बोलण्यासाठी वापरा
+            </Text>
+          </Pressable>
         </View>
 
         <View style={styles.sectionHeading}>
@@ -572,6 +673,71 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.light.border,
     marginBottom: 26,
+  },
+  customCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: colors.light.card,
+    borderWidth: 1,
+    borderColor: colors.light.border,
+    marginBottom: 24,
+  },
+  customHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  customIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.light.warm + '22',
+  },
+  customCopy: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  customTitle: {
+    color: colors.light.cardForeground,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  customSub: {
+    color: colors.light.mutedForeground,
+    fontSize: 11,
+    marginTop: 3,
+  },
+  customLabel: {
+    color: colors.light.mutedForeground,
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  customInput: {
+    minHeight: 42,
+    color: colors.light.foreground,
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 11,
+    backgroundColor: colors.light.background,
+    borderWidth: 1,
+    borderColor: colors.light.border,
+    marginBottom: 12,
+  },
+  customAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  customActionText: {
+    color: colors.light.sage,
+    fontSize: 11,
+    fontWeight: '600',
   },
   modelIcon: {
     width: 38,
